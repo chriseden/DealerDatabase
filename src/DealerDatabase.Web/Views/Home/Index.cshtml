@@ -1,0 +1,93 @@
+@model IReadOnlyList<DealerDatabase.Data.Entities.Dealer>
+@{
+    ViewData["Title"] = "Dealers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="h3 m-0">
+        Dealers
+        <span class="badge bg-secondary fs-6 align-middle">@Model.Count</span>
+    </h1>
+</div>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">No dealers found. Run the import console application to populate the database.</p>
+}
+else
+{
+    <div class="table-responsive border rounded" style="max-height: calc(100vh - 180px); overflow-y: auto;">
+        <table class="table table-sm table-striped table-hover m-0" style="font-size: 0.85rem;">
+            <thead class="table-light sticky-top" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th>Id</th>
+                    <th>Name &amp; Trading Names</th>
+                    <th>Company No.</th>
+                    <th>VAT No.</th>
+                    <th>FCA No.</th>
+                    <th>Postcode</th>
+                    <th>Domain</th>
+                    <th>SAF Status</th>
+                    <th>Lineage Tag</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dealer in Model)
+                {
+                    var primaryPostcode = dealer.Addresses?.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a.Postcode))?.Postcode;
+
+                    <tr>
+                        <td>@dealer.Id</td>
+                        <td>
+                            <strong>@dealer.Name</strong>
+                            @if (dealer.TradingNames != null && dealer.TradingNames.Any())
+                            {
+                                <div class="small text-muted" style="font-size: 0.75rem;">
+                                    <em>aka:</em> @string.Join(", ", dealer.TradingNames.Select(t => t.Name))
+                                </div>
+                            }
+                        </td>
+                        <td><code>@(dealer.CompanyNumber ?? "-")</code></td>
+                        <td><code>@(dealer.VatNumber ?? "-")</code></td>
+                        <td><code>@(dealer.FcaReferenceNumber ?? "-")</code></td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(primaryPostcode))
+                            {
+                                <span class="badge bg-light text-dark border">@primaryPostcode</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(dealer.Domain))
+                            {
+                                <a href="https://@dealer.Domain" target="_blank" rel="noopener">@dealer.Domain</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(dealer.SafStatus))
+                            {
+                                <span class="badge @(dealer.SafStatus.Equals("Active", StringComparison.OrdinalIgnoreCase) ? "bg-success" : "bg-warning text-dark")">
+                                    @dealer.SafStatus
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td style="max-width: 200px; word-break: break-all;">
+                            <small class="text-monospace text-secondary" style="font-size: 0.75rem;">@(dealer.LineageTag ?? "-")</small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
